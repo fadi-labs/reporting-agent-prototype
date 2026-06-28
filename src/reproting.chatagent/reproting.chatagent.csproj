@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- OpenAI-compatible client — works with any LiteLLM proxy -->
+    <PackageReference Include="OpenAI" Version="2.10.0" />
+    <!-- MEAI wrapper: gives AsIChatClient() on OpenAI.Chat.ChatClient -->
+    <!-- Must align with Microsoft.Extensions.AI.Abstractions 10.5.2 pulled by ModelContextProtocol.Core -->
+    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="10.5.0" />
+    <!-- MCP client — McpClientTool already extends Microsoft.Extensions.AI.AIFunction -->
+    <PackageReference Include="ModelContextProtocol" Version="1.4.0" />
+    <!-- Config -->
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,155 @@
+name: scp-reporting-mcp
+
+x-druid-common: &druid-common
+  image: apache/druid:31.0.1
+  env_file:
+    - ./docker/druid.env
+  depends_on:
+    - zookeeper
+    - postgres
+  restart: unless-stopped
+
+services:
+  # --- Vector store -------------------------------------------------------
+  qdrant:
+    image: qdrant/qdrant:v1.12.4
+    container_name: qdrant
+    ports:
+      - "6333:6333"   # REST API
+      - "6334:6334"   # gRPC (used by Qdrant.Client)
+    volumes:
+      - qdrant_data:/qdrant/storage
+    restart: unless-stopped
+
+  # --- Shared PostgreSQL --------------------------------------------------
+  # Hosts: druid metadata, plus the `reporting` and `staging` DBs used by
+  # the .NET entity tools. Init script creates all three.
+  postgres:
+    image: postgres:16-alpine
+    container_name: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres-init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    restart: unless-stopped
+
+  # --- Druid cluster (single-host) ----------------------------------------
+  zookeeper:
+    image: zookeeper:3.9
+    container_name: zookeeper
+    environment:
+      ZOO_MY_ID: 1
+    ports:
+      - "2181:2181"
+    restart: unless-stopped
+
+  druid-coordinator:
+    <<: *druid-common
+    container_name: druid-coordinator
+    command: ["coordinator"]
+    ports:
+      - "8081:8081"
+    volumes:
+      - druid_coordinator_var:/opt/druid/var
+      - druid_shared:/opt/shared
+      - ./docker/druid-sample:/opt/druid-sample:ro
+
+  druid-broker:
+    <<: *druid-common
+    container_name: druid-broker
+    command: ["broker"]
+    depends_on:
+      - zookeeper
+      - postgres
+      - druid-coordinator
+    ports:
+      - "8082:8082"   # SQL endpoint: http://localhost:8082/druid/v2/sql
+    volumes:
+      - druid_broker_var:/opt/druid/var
+      - druid_shared:/opt/shared
+
+  druid-historical:
+    <<: *druid-common
+    container_name: druid-historical
+    command: ["historical"]
+    depends_on:
+      - zookeeper
+      - postgres
+      - druid-coordinator
+    ports:
+      - "8083:8083"
+    volumes:
+      - druid_historical_var:/opt/druid/var
+      - druid_shared:/opt/shared
+
+  druid-middlemanager:
+    <<: *druid-common
+    container_name: druid-middlemanager
+    command: ["middleManager"]
+    depends_on:
+      - zookeeper
+      - postgres
+      - druid-coordinator
+    ports:
+      - "8091:8091"
+      - "8100-8105:8100-8105"
+    volumes:
+      - druid_mm_var:/opt/druid/var
+      - druid_shared:/opt/shared
+      - ./docker/druid-sample:/opt/druid-sample:ro
+
+  druid-router:
+    <<: *druid-common
+    container_name: druid-router
+    command: ["router"]
+    depends_on:
+      - zookeeper
+      - postgres
+      - druid-coordinator
+      - druid-broker
+    ports:
+      - "8888:8888"   # web console: http://localhost:8888
+    volumes:
+      - druid_router_var:/opt/druid/var
+
+  # --- MCP server (optional) ----------------------------------------------
+  # Bring up with: docker compose --profile app up
+  mcp:
+    profiles: ["app"]
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: scp-reporting-mcp
+    depends_on:
+      - qdrant
+      - postgres
+      - druid-broker
+    environment:
+      ASPNETCORE_URLS: http://0.0.0.0:8001
+      Postgres__Host: postgres
+      Postgres__Port: "5432"
+      Postgres__User: postgres
+      Postgres__Password: postgres
+      Postgres__ReportDatabase: reporting
+      Postgres__StageDatabase: staging
+      Druid__Host: http://druid-broker:8082
+      Qdrant__Url: http://qdrant:6334
+      FieldRetrieval__Mode: Taxonomy
+    ports:
+      - "8001:8001"
+    restart: unless-stopped
+
+volumes:
+  qdrant_data:
+  postgres_data:
+  druid_shared:
+  druid_coordinator_var:
+  druid_broker_var:
+  druid_historical_var:
+  druid_mm_var:
+  druid_router_var:

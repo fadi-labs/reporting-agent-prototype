@@ -1,0 +1,42 @@
+{
+  "type": "index_parallel",
+  "spec": {
+    "dataSchema": {
+      "dataSource": "Reporting",
+      "timestampSpec": { "column": "__time", "format": "iso" },
+      "dimensionsSpec": {
+        "dimensions": [
+          "dataRelationId",
+          "shipperBookingNumber",
+          "customerOrderLine_customerOrderLineStatus",
+          "customerOrderNumber",
+          "customerOrderStatus",
+          "equipmentNumber",
+          "customerOrderLine_portOfLoading",
+          "customerOrderLine_portOfDischarge"
+        ]
+      },
+      "granularitySpec": {
+        "type": "uniform",
+        "segmentGranularity": "MONTH",
+        "queryGranularity": "NONE",
+        "rollup": false
+      }
+    },
+    "ioConfig": {
+      "type": "index_parallel",
+      "inputSource": {
+        "type": "local",
+        "baseDir": "/opt/druid-sample",
+        "filter": "sample-reporting.json"
+      },
+      "inputFormat": { "type": "json" },
+      "appendToExisting": false
+    },
+    "tuningConfig": {
+      "type": "index_parallel",
+      "maxRowsInMemory": 10000,
+      "partitionsSpec": { "type": "dynamic" }
+    }
+  }
+}
