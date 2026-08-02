@@ -31,6 +31,20 @@ public sealed class EntityTools
         return await _db.QuerySingleAsync(DatabaseKind.Stage, sql, new object?[] { customer_order_number }, ct);
     }
 
+    [McpServerTool(Name = "get_customer_order_details")]
+    [Description(
+        "Retrieve all fields of a customer order from the staging database by its order number. " +
+        "Returns a dictionary of column-value pairs for the matching order, or null if no order " +
+        "matches the given number.")]
+    public async Task<IDictionary<string, object?>?> GetCustomerOrderDetails(
+        [Description("The unique customer order number to look up.")]
+        string customer_order_number,
+        CancellationToken ct = default)
+    {
+        const string sql = "SELECT * FROM customer_order WHERE customer_order_number = $1";
+        return await _db.QuerySingleAsync(DatabaseKind.Stage, sql, new object?[] { customer_order_number }, ct);
+    }
+
     [McpServerTool(Name = "get_container_latest_milestone")]
     [Description(
         "Retrieve the most recent milestone or status event for a given container number. " +
