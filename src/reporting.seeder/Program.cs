@@ -34,6 +34,7 @@ services.AddSingleton<QdrantClient>(sp =>
 
 await using var provider = services.BuildServiceProvider();
 var log = provider.GetRequiredService<ILoggerFactory>().CreateLogger("Seeder");
+var log2 = provider.GetRequiredService<ILoggerFactory>().CreateLogger("Seeder");
 var qdrantOpts = provider.GetRequiredService<IOptions<QdrantOptions>>().Value;
 var retrievalOpts = provider.GetRequiredService<IOptions<FieldRetrievalOptions>>().Value;
 var qdrant = provider.GetRequiredService<QdrantClient>();
