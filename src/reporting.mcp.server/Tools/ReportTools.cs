@@ -90,12 +90,11 @@ public sealed class ReportTools
         var result = await _gateway.ExecuteReportAsync(report_id, ct);
         if (!result.Success)
         {
-            using var doc = JsonDocument.Parse(JsonSerializer.Serialize(new
+            return JsonSerializer.SerializeToElement(new
             {
                 error = result.Error,
                 detail = result.RawText,
-            }));
-            return doc.RootElement.Clone();
+            });
         }
         return result.Data;
     }

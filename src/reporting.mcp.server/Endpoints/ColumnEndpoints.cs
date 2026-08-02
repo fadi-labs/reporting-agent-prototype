@@ -23,7 +23,6 @@ public static class ColumnEndpoints
                 ? string.Equals(enabledValue.ToString(), "true", StringComparison.OrdinalIgnoreCase)
                 : null;
 
-            // Test comment
             try
             {
                 var (columns, etag) = service.GetColumns(
