@@ -147,7 +147,7 @@ jobs:
         )
       ) ||
       (github.event_name == 'workflow_dispatch')
-    uses: generic-automation-and-it/smooth-ai-report-review/.github/workflows/pipeline-code-review-report.yml@main
+    uses: generic-automation-and-it/smooth-ai-report-review/.github/workflows/pipeline-code-review-report.yml@4998aa7b2d563c2af4afc3f78e47ebaf00a260e6
     with:
       pr_number: ${{ inputs.pr_number || '' }}
       model: ${{ inputs.model || '' }}
