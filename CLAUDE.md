@@ -42,7 +42,12 @@ dotnet run --project src\reproting.chatagent
 dotnet run --project src\reporting.seeder
 ```
 
-Run smoke tests:
+Run unit tests:
+```powershell
+dotnet test tests/reporting.mcp.server.tests/reporting.mcp.server.tests.csproj
+```
+
+Run smoke tests (requires running MCP server):
 ```powershell
 .\scripts\smoke-test.ps1
 ```
