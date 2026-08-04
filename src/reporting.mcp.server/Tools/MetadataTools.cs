@@ -9,6 +9,20 @@ namespace reporting.mcp.server.Tools;
 [McpServerToolType]
 public sealed class MetadataTools
 {
+    private static readonly IReadOnlyList<string> ValidUniverses =
+    [
+        "Customer Order", "Shipper Booking", "Carrier Booking", "Cargo Stuffing",
+        "Shipping Instruction", "Events And Milestones", "Destination", "Customer Messaging Service"
+    ];
+
+    private static readonly IReadOnlyList<string> ValidTags =
+    [
+        "identifier", "status", "date", "milestone", "leg", "location", "partner", "quantity",
+        "weight", "volume", "cost", "currency", "demurrage", "detention", "container", "document",
+        "reference", "flag", "vessel", "mode", "cargo", "service", "customs"
+    ];
+
+
     private readonly IFieldRetriever _fields;
     private readonly ILogger<MetadataTools> _logger;
 
@@ -61,6 +75,42 @@ public sealed class MetadataTools
         _logger.LogInformation(
             "get_fields called with universes={Universes}, tags={Tags}, top_k={TopK}",
             string.Join(",", universes), string.Join(",", tags), top_k);
+
+        var errors = new List<string>();
+
+        if (universes.Length == 0)
+        {
+            errors.Add("universes must contain at least one entry.");
+        }
+        else
+        {
+            var unknownUniverses = universes
+                .Where(u => !ValidUniverses.Any(v => v.Equals(u, StringComparison.OrdinalIgnoreCase)))
+                .ToList();
+            if (unknownUniverses.Count > 0)
+                errors.Add($"Unknown universes: {string.Join(", ", unknownUniverses.Select(u => $"\"{u}\""))}. " +
+                           $"Valid values: {string.Join(", ", ValidUniverses)}.");
+        }
+
+        if (tags.Length == 0)
+        {
+            errors.Add("tags must contain at least one entry.");
+        }
+        else
+        {
+            var unknownTags = tags
+                .Where(t => !ValidTags.Any(v => v.Equals(t, StringComparison.OrdinalIgnoreCase)))
+                .ToList();
+            if (unknownTags.Count > 0)
+                errors.Add($"Unknown tags: {string.Join(", ", unknownTags.Select(t => $"\"{t}\""))}. " +
+                           $"Valid values: {string.Join(", ", ValidTags)}.");
+        }
+
+        if (top_k < 1 || top_k > 100)
+            errors.Add($"top_k must be between 1 and 100 inclusive (got {top_k}).");
+
+        if (errors.Count > 0)
+            throw new ArgumentException(string.Join(" ", errors));
 
         var results = await _fields.RetrieveAsync(universes, tags, top_k, ct);
 

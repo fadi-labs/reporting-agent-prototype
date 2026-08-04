@@ -80,4 +80,86 @@ public class MetadataToolsTests
             5,
             Arg.Any<CancellationToken>());
     }
+
+    // Criterion 1: empty universes
+    [Fact]
+    public async Task GetFields_EmptyUniverses_ThrowsArgumentException()
+    {
+        await Assert.ThrowsAsync<ArgumentException>(() =>
+            Build().GetFields([], ["status"]));
+    }
+
+    // Criterion 2: empty tags
+    [Fact]
+    public async Task GetFields_EmptyTags_ThrowsArgumentException()
+    {
+        await Assert.ThrowsAsync<ArgumentException>(() =>
+            Build().GetFields(["Customer Order"], []));
+    }
+
+    // Criterion 3: unrecognised universe names the value and lists valid universes
+    [Fact]
+    public async Task GetFields_UnrecognisedUniverse_ThrowsWithUniverseNameAndValidList()
+    {
+        var ex = await Assert.ThrowsAsync<ArgumentException>(() =>
+            Build().GetFields(["Foo"], ["status"]));
+        Assert.Contains("Foo", ex.Message);
+        Assert.Contains("Customer Order", ex.Message);
+    }
+
+    // Criterion 4: unrecognised tag names the value and lists valid tags
+    [Fact]
+    public async Task GetFields_UnrecognisedTag_ThrowsWithTagNameAndValidList()
+    {
+        var ex = await Assert.ThrowsAsync<ArgumentException>(() =>
+            Build().GetFields(["Customer Order"], ["banana"]));
+        Assert.Contains("banana", ex.Message);
+        Assert.Contains("identifier", ex.Message);
+    }
+
+    // Criterion 5: top_k = 0
+    [Fact]
+    public async Task GetFields_TopKZero_ThrowsArgumentException()
+    {
+        await Assert.ThrowsAsync<ArgumentException>(() =>
+            Build().GetFields(["Customer Order"], ["status"], top_k: 0));
+    }
+
+    // Criterion 6: top_k = 101
+    [Fact]
+    public async Task GetFields_TopK101_ThrowsArgumentException()
+    {
+        await Assert.ThrowsAsync<ArgumentException>(() =>
+            Build().GetFields(["Customer Order"], ["status"], top_k: 101));
+    }
+
+    // Criterion 7: both invalid universe and tag — single exception reports both violations
+    [Fact]
+    public async Task GetFields_InvalidUniverseAndTag_SingleExceptionReportsBothViolations()
+    {
+        var ex = await Assert.ThrowsAsync<ArgumentException>(() =>
+            Build().GetFields(["Foo"], ["banana"]));
+        Assert.Contains("Foo", ex.Message);
+        Assert.Contains("banana", ex.Message);
+    }
+
+    // Criterion 8: lowercase universe succeeds (case-insensitive matching)
+    [Fact]
+    public async Task GetFields_LowercaseUniverse_Succeeds()
+    {
+        _retriever.RetrieveAsync(
+                Arg.Any<IReadOnlyList<string>>(),
+                Arg.Any<IReadOnlyList<string>>(),
+                Arg.Any<int>(),
+                Arg.Any<CancellationToken>())
+            .Returns(Array.Empty<FieldResult>());
+
+        await Build().GetFields(["customer order"], ["status"]);
+
+        await _retriever.Received(1).RetrieveAsync(
+            Arg.Any<IReadOnlyList<string>>(),
+            Arg.Any<IReadOnlyList<string>>(),
+            Arg.Any<int>(),
+            Arg.Any<CancellationToken>());
+    }
 }
