@@ -97,6 +97,10 @@ Each project has its own `appsettings.json`; environment variables override. Key
 - `AzureOpenAI:*` — embeddings endpoint and key
 - `FieldRetrieval:Mode` — `Taxonomy` or `Vector`
 
+## Testing
+
+When implementing a feature that has a spec in `specs/`, work RED-GREEN against each acceptance criterion. See `.claude/rules/testing.md` — this rule is always on.
+
 ## Architecture decisions
 
 Documented in `docs/adr/` — read before changing anything the ADRs cover. Rules for when a new ADR is required: `.claude/rules/architecture.md`.
