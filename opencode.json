@@ -1,0 +1,1 @@
+{"$schema": "https://opencode.ai/config.json", "instructions": ["CLAUDE.md", ".claude/rules/architecture.md", ".claude/rules/testing.md"], "skills": {"paths": [".claude/skills"]}, "default_agent": "general"}
