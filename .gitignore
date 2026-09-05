@@ -8,3 +8,7 @@ obj/
 .env.local
 TestResults/
 *.log
+.opencode/node_modules/
+
+/.opencode/package-lock.json
+/.opencode/package.json

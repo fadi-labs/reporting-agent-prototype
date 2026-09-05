@@ -162,4 +162,89 @@ public class MetadataToolsTests
             Arg.Any<int>(),
             Arg.Any<CancellationToken>());
     }
+
+    // list_universes — AC: exactly 8 entries
+    [Fact]
+    public async Task ListUniverses_ReturnsExactly8Entries()
+    {
+        var result = await Build().ListUniverses();
+        Assert.Equal(8, result.Count);
+    }
+
+    // list_universes — AC: name set equals ValidUniverses (drift check)
+    [Fact]
+    public async Task ListUniverses_NamesMatchValidUniverseSet()
+    {
+        var expected = new HashSet<string>
+        {
+            "Customer Order", "Shipper Booking", "Carrier Booking", "Cargo Stuffing",
+            "Shipping Instruction", "Events And Milestones", "Destination", "Customer Messaging Service"
+        };
+
+        var result = await Build().ListUniverses();
+
+        Assert.Equal(expected, result.Select(u => u.Name).ToHashSet());
+    }
+
+    // list_universes — AC: Customer Order first, Customer Messaging Service last
+    [Fact]
+    public async Task ListUniverses_OrderIsCustomerOrderFirstAndCustomerMessagingServiceLast()
+    {
+        var result = await Build().ListUniverses();
+        Assert.Equal("Customer Order", result[0].Name);
+        Assert.Equal("Customer Messaging Service", result[^1].Name);
+    }
+
+    // list_universes — AC: descriptions non-empty, ≤140 chars, no line breaks
+    [Fact]
+    public async Task ListUniverses_AllDescriptionsNonEmptyShortAndSingleLine()
+    {
+        var result = await Build().ListUniverses();
+        foreach (var universe in result)
+        {
+            Assert.False(string.IsNullOrWhiteSpace(universe.Description),
+                $"{universe.Name}: description must not be empty");
+            Assert.True(universe.Description.Length <= 140,
+                $"{universe.Name}: description exceeds 140 chars ({universe.Description.Length})");
+            Assert.DoesNotContain('\n', universe.Description);
+            Assert.DoesNotContain('\r', universe.Description);
+        }
+    }
+
+    // list_universes — AC: each description contains a domain keyword
+    [Theory]
+    [InlineData("Customer Order", "order")]
+    [InlineData("Shipper Booking", "booking")]
+    [InlineData("Carrier Booking", "booking")]
+    [InlineData("Cargo Stuffing", "cargo")]
+    [InlineData("Shipping Instruction", "instruction")]
+    [InlineData("Events And Milestones", "milestone")]
+    [InlineData("Destination", "destination")]
+    [InlineData("Customer Messaging Service", "message")]
+    public async Task ListUniverses_DescriptionContainsDomainKeyword(string universeName, string keyword)
+    {
+        var result = await Build().ListUniverses();
+        var universe = result.Single(u => u.Name == universeName);
+        Assert.Contains(keyword, universe.Description, StringComparison.OrdinalIgnoreCase);
+    }
+
+    // list_universes — AC: each returned name is accepted by GetFields (consistency with ValidUniverses)
+    [Fact]
+    public async Task ListUniverses_EachNameIsAcceptedByGetFields()
+    {
+        _retriever.RetrieveAsync(
+                Arg.Any<IReadOnlyList<string>>(),
+                Arg.Any<IReadOnlyList<string>>(),
+                Arg.Any<int>(),
+                Arg.Any<CancellationToken>())
+            .Returns(Array.Empty<FieldResult>());
+
+        var tool = Build();
+        var universes = await tool.ListUniverses();
+        foreach (var u in universes)
+        {
+            var ex = await Record.ExceptionAsync(() => tool.GetFields([u.Name], ["status"]));
+            Assert.Null(ex);
+        }
+    }
 }

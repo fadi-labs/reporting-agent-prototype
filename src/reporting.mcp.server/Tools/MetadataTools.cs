@@ -1,19 +1,29 @@
 using System.ComponentModel;
-using Microsoft.Extensions.Logging;
 using ModelContextProtocol.Server;
 using reporting.agent.core.Models;
 using reporting.agent.core.Services.Taxonomy;
 
 namespace reporting.mcp.server.Tools;
 
+public sealed record UniverseInfo(string Name, string Description);
+
 [McpServerToolType]
 public sealed class MetadataTools
 {
-    private static readonly IReadOnlyList<string> ValidUniverses =
+    private static readonly IReadOnlyList<UniverseInfo> Universes =
     [
-        "Customer Order", "Shipper Booking", "Carrier Booking", "Cargo Stuffing",
-        "Shipping Instruction", "Events And Milestones", "Destination", "Customer Messaging Service"
+        new("Customer Order",             "Customer orders and their lifecycle, including order status, line items, and shipment assignments."),
+        new("Shipper Booking",            "Bookings made by shippers to reserve capacity, covering booking status and cargo details."),
+        new("Carrier Booking",            "Carrier-side bookings confirming vessel space, including carrier references and booking status."),
+        new("Cargo Stuffing",             "Cargo stuffing operations linking cargo to containers, including stuffing status and dates."),
+        new("Shipping Instruction",       "Shipping instructions submitted by shippers, containing cargo and routing instruction details."),
+        new("Events And Milestones",      "Shipment events and milestones tracking the physical movement of goods across the supply chain."),
+        new("Destination",               "Destination-leg data covering final delivery information and port-of-discharge details."),
+        new("Customer Messaging Service", "Messages exchanged with customers via the customer messaging service, including message status."),
     ];
+
+    private static readonly IReadOnlyList<string> ValidUniverses =
+        Universes.Select(u => u.Name).ToList();
 
     private static readonly IReadOnlyList<string> ValidTags =
     [
@@ -30,6 +40,20 @@ public sealed class MetadataTools
     {
         _fields = fields;
         _logger = logger;
+    }
+
+    [McpServerTool(Name = "list_universes")]
+    [Description(
+        "List all available reporting universes with a short description of each.\n\n" +
+        "Call this FIRST to discover which universes exist, then call get_field_tags(universe) " +
+        "to explore the available field categories within a universe.\n\n" +
+        "Returns: ordered list of objects with 'name' (the exact string to pass to other tools) " +
+        "and 'description' (one-line domain summary).")]
+    public Task<IReadOnlyList<UniverseInfo>> ListUniverses(CancellationToken ct = default)
+    {
+        _logger.LogInformation("list_universes called");
+        _logger.LogInformation("list_universes returned {Count} universes", Universes.Count);
+        return Task.FromResult(Universes);
     }
 
     [McpServerTool(Name = "get_field_tags")]
