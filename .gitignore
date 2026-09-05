@@ -1,0 +1,14 @@
+bin/
+obj/
+.vs/
+.idea/
+*.user
+*.suo
+.env
+.env.local
+TestResults/
+*.log
+.opencode/node_modules/
+
+/.opencode/package-lock.json
+/.opencode/package.json
