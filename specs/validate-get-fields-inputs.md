@@ -18,16 +18,13 @@ partial call to the retriever is made when validation fails.
 ### universes
 - Must contain at least one entry.
 - Each value must match (case-insensitively) one of the canonical universe names:
-  `Customer Order`, `Shipper Booking`, `Carrier Booking`, `Cargo Stuffing`,
-  `Shipping Instruction`, `Events And Milestones`, `Destination`, `Customer Messaging Service`.
+  `Stocks`.
 - Unrecognised values are included in the error message.
 
 ### tags
 - Must contain at least one entry.
 - Each value must match (case-insensitively) one of the known tags:
-  `identifier`, `status`, `date`, `milestone`, `leg`, `location`, `partner`, `quantity`,
-  `weight`, `volume`, `cost`, `currency`, `demurrage`, `detention`, `container`, `document`,
-  `reference`, `flag`, `vessel`, `mode`, `cargo`, `service`, `customs`.
+  `identifier`, `status`, `date`, `quantity`, `cost`, `currency`, `reference`, `flag`.
 - Unrecognised values are included in the error message.
 
 ### top_k
@@ -44,12 +41,12 @@ list the valid options, so the LLM can self-correct without a follow-up round-tr
 - `universes` or `tags` is an empty array — treated as a missing-input error, not a type error.
 - `top_k = 0` — out of range; caught alongside any other violations.
 - `top_k > 100` — out of range; caught alongside any other violations.
-- Case variants like `"customer order"` or `"STATUS"` — accepted after normalisation; not an error.
+- Case variants like `"stocks"` or `"STATUS"` — accepted after normalisation; not an error.
 
 ## Out of scope
 
 - Validation of `get_field_tags` inputs.
-- Validation of any inputs to `query_shipment_data`, `execute_report`, or `download_report`.
+- Validation of any inputs to `query_stock_data`, `execute_report`, or `download_report`.
 - Changing field retrieval behaviour (no changes to `IFieldRetriever` implementations or routing — see ADR 0001).
 - Adding new universes or tags to the allowlists (allowlists must match the existing tool descriptions exactly).
 
@@ -62,5 +59,5 @@ list the valid options, so the LLM can self-correct without a follow-up round-tr
 - [ ] Calling `get_fields` with `top_k = 0` returns an MCP error response.
 - [ ] Calling `get_fields` with `top_k = 101` returns an MCP error response.
 - [ ] When both an invalid universe and an invalid tag are supplied, a single MCP error response reports both violations.
-- [ ] Calling `get_fields` with `universes = ["customer order"]` (lowercase) succeeds — case-insensitive matching is applied.
+- [ ] Calling `get_fields` with `universes = ["stocks"]` (lowercase) succeeds — case-insensitive matching is applied.
 - [ ] Calling `get_fields` with valid inputs reaches `IFieldRetriever.RetrieveAsync` unchanged.

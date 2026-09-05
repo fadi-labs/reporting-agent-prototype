@@ -31,16 +31,16 @@ public sealed class ReportTools
         _logger = logger;
     }
 
-    [McpServerTool(Name = "query_shipment_data")]
+    [McpServerTool(Name = "query_stock_data")]
     [Description(
-        "Execute a SQL query against the shipment analytics database (Apache Druid).\n\n" +
+        "Execute a SQL query against the stock portfolio analytics database (Apache Druid).\n\n" +
         "Write a standard SQL SELECT query against the 'Reporting' table using column_id values " +
         "discovered via get_fields. The system automatically:\n" +
         "- Validates all column references against the schema\n" +
-        "- Injects the latest-record-per-shipment deduplication filter\n" +
-        "- Injects the deleted-record exclusion filter\n" +
+        "- Injects the latest-record-per-position deduplication filter\n" +
+        "- Injects the sold-record exclusion filter\n" +
         "- Caps the result limit (max 500)\n\n" +
-        "You do NOT need to include deduplication or delete-exclusion filter logic in your SQL " +
+        "You do NOT need to include deduplication or exclude-sold filter logic in your SQL " +
         "— these are injected automatically. You DO need to use valid column_id values from get_fields.\n\n" +
         "Supported: WHERE (AND/OR), GROUP BY, HAVING, ORDER BY, CASE WHEN, TIMESTAMPDIFF, " +
         "COUNT/SUM/AVG/MIN/MAX, COUNT(DISTINCT ...), subqueries, Druid SQL functions.\n\n" +
@@ -48,14 +48,14 @@ public sealed class ReportTools
         "CAST(col AS TIMESTAMP) — use TIME_PARSE(col) instead.\n\n" +
         "Not supported: CTEs (WITH), UNION, SELECT *, non-SELECT statements.\n\n" +
         "For null checks use IS NULL / IS NOT NULL, not empty strings or the literal 'NULL'.")]
-    public async Task<object> QueryShipmentData(
+    public async Task<object> QueryStockData(
         [Description("A SQL SELECT query against the Reporting table.")]
         string sql,
         [Description("Maximum number of rows to return (default 20, max 500).")]
         int limit = 20,
         CancellationToken ct = default)
     {
-        _logger.LogInformation("query_shipment_data called with sql: {Sql}, limit: {Limit}", sql, limit);
+        _logger.LogInformation("query_stock_data called with sql: {Sql}, limit: {Limit}", sql, limit);
 
         var validation = _validator.Validate(sql);
         if (!validation.Result.Valid)

@@ -2,14 +2,7 @@ namespace reporting.agent.core.Models;
 
 public enum Universe
 {
-    CustomerOrder,
-    ShipperBooking,
-    CarrierBooking,
-    CargoStuffing,
-    ShippingInstruction,
-    EventsAndMilestones,
-    Destination,
-    CustomerMessagingService,
+    Stocks,
 }
 
 public static class UniverseMap
@@ -17,27 +10,13 @@ public static class UniverseMap
     public static readonly IReadOnlyDictionary<Universe, string> DisplayName =
         new Dictionary<Universe, string>
         {
-            [Universe.CustomerOrder] = "Customer Order",
-            [Universe.ShipperBooking] = "Shipper Booking",
-            [Universe.CarrierBooking] = "Carrier Booking",
-            [Universe.CargoStuffing] = "Cargo Stuffing",
-            [Universe.ShippingInstruction] = "Shipping Instruction",
-            [Universe.EventsAndMilestones] = "Events And Milestones",
-            [Universe.Destination] = "Destination",
-            [Universe.CustomerMessagingService] = "Customer Messaging Service",
+            [Universe.Stocks] = "Stocks",
         };
 
     public static readonly IReadOnlyDictionary<Universe, string> FileStem =
         new Dictionary<Universe, string>
         {
-            [Universe.CustomerOrder] = "customer_order",
-            [Universe.ShipperBooking] = "shipper_booking",
-            [Universe.CarrierBooking] = "carrier_booking",
-            [Universe.CargoStuffing] = "cargo_stuffing",
-            [Universe.ShippingInstruction] = "shipping_instruction",
-            [Universe.EventsAndMilestones] = "events_and_milestones",
-            [Universe.Destination] = "destination",
-            [Universe.CustomerMessagingService] = "customer_messaging_service",
+            [Universe.Stocks] = "stocks",
         };
 
     public static readonly IReadOnlyDictionary<string, Universe> ByFileStem =
@@ -60,4 +39,3 @@ public static class UniverseMap
         return false;
     }
 }
-

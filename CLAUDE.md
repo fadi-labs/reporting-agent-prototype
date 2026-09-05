@@ -67,7 +67,7 @@ Four projects in `src/`:
 
 - `get_field_tags` — lists available field category tags for a universe
 - `get_fields` — returns column definitions with metadata for a universe
-- `query_shipment_data` — validates and executes SQL against Druid
+- `query_stock_data` — validates and executes SQL against Druid
 - `execute_report` / `download_report` — run saved reports via Secure Gateway
 
 ### Field Retrieval Modes
@@ -82,11 +82,11 @@ User SQL flows through `reporting.agent.core/Services/Sql/`:
 1. **Validation** — rejects CTEs, UNION, `SELECT *`, enforces 500-row max
 2. **Transformation** — auto-injects deduplication and soft-delete filters
 
-Key constraint: SQL must use **column IDs** (e.g., `customerOrder_orderStatus`), not display names. Date filtering requires `TIME_PARSE()`, not `CAST() AS TIMESTAMP`.
+Key constraint: SQL must use **column IDs** (e.g., `stockTicker`, `sharesOwned`), not display names. Date filtering requires `TIME_PARSE()`, not `CAST() AS TIMESTAMP`.
 
 ### Universes
 
-Customer Order, Shipper Booking, Carrier Booking, Cargo Stuffing, Shipping Instruction, Events And Milestones, Destination.
+Stocks.
 
 ## Configuration
 

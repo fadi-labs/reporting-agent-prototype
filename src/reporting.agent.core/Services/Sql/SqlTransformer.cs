@@ -5,12 +5,12 @@ using SqlParser.Dialects;
 namespace reporting.agent.core.Services.Sql;
 
 /// Transforms a validated SELECT statement: ensures SELECT DISTINCT, injects
-/// the dedup + exclude-deleted subquery into WHERE, and caps LIMIT.
+/// the dedup + exclude-sold subquery into WHERE, and caps LIMIT.
 /// Mirrors services/sql/transformer.py.
 public sealed class SqlTransformer
 {
     private const string ExcludeDeleted =
-        "COALESCE(customerOrderLine_customerOrderLineStatus, '') != 'DELETED'";
+        "COALESCE(positionStatus, '') != 'SOLD'";
     private const int MaxLimit = 500;
     private static readonly MySqlDialect Dialect = new();
 

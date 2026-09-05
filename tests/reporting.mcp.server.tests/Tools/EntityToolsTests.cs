@@ -12,40 +12,18 @@ public class EntityToolsTests
         new(null!, NullLogger<EntityTools>.Instance);
 
     [Fact]
-    public async Task GetEntityRelationships_AllParamsNullOrEmpty_ThrowsArgumentException()
+    public async Task GetEntityRelationships_EmptyStockTicker_ThrowsArgumentException()
     {
         var tools = Build();
         await Assert.ThrowsAsync<ArgumentException>(() =>
-            tools.GetEntityRelationships(null, null, null, null, null, null));
+            tools.GetEntityRelationships(""));
     }
 
     [Fact]
-    public async Task GetEntityRelationships_OnlyEmptyStrings_ThrowsArgumentException()
-    {
-        var tools = Build();
-        await Assert.ThrowsAsync<ArgumentException>(() =>
-            tools.GetEntityRelationships("", "", "", "", "", ""));
-    }
-
-    [Fact]
-    public async Task GetEntityIdentificationRules_ContainsSbkPrefix()
+    public async Task GetEntityIdentificationRules_ContainsTickerPattern()
     {
         var result = await Build().GetEntityIdentificationRules();
-        Assert.Contains("SBK", result);
-    }
-
-    [Fact]
-    public async Task GetEntityIdentificationRules_ContainsCbkPrefix()
-    {
-        var result = await Build().GetEntityIdentificationRules();
-        Assert.Contains("CBK", result);
-    }
-
-    [Fact]
-    public async Task GetEntityIdentificationRules_ContainsIso6346ContainerPattern()
-    {
-        var result = await Build().GetEntityIdentificationRules();
-        Assert.Contains("ISO 6346", result);
+        Assert.Contains("AAPL", result);
     }
 
     [Fact]

@@ -3,7 +3,7 @@
 ## Context
 
 Today an LLM using this MCP server has no in-band way to discover which universes it
-may pass to `get_field_tags`, `get_fields`, or `query_shipment_data`. The valid set
+may pass to `get_field_tags`, `get_fields`, or `query_stock_data`. The valid set
 lives in `src/reporting.mcp.server/Tools/MetadataTools.cs` as the private
 `ValidUniverses` list and is only surfaced piecemeal via the `[Description]` on
 individual parameters. LLMs must therefore either be pre-primed with the list or
@@ -13,7 +13,7 @@ guess, which risks calling downstream tools with unknown universe names and gett
 This spec introduces a new MCP tool, `list_universes`, exposed from
 `MetadataTools`, that returns the full set of supported universes with a one-line
 description of each. It is intended to be the first call in the discovery funnel:
-`list_universes` → `get_field_tags` → `get_fields` → `query_shipment_data`.
+`list_universes` → `get_field_tags` → `get_fields` → `query_stock_data`.
 
 Only `src/reporting.mcp.server/Tools/MetadataTools.cs` and its test project are
 affected. There are no SQL, Druid, or field-retrieval (Taxonomy / Vector) changes.
@@ -25,16 +25,12 @@ affected. There are no SQL, Druid, or field-retrieval (Taxonomy / Vector) change
   it as the entry point of the discovery flow (before `get_field_tags`).
 - The tool takes **no parameters** other than the standard
   `CancellationToken ct = default`.
-- It returns an ordered list of objects, one per universe. Each object has exactly
-  two fields:
-  - `name` — the display name, matching the exact strings already used in
-    `ValidUniverses` (e.g. `"Customer Order"`, `"Shipper Booking"`).
+- `name` — the display name, matching the exact strings already used in
+    `ValidUniverses` (e.g. `"Stocks"`).
   - `description` — a single, human-readable sentence describing what the universe
-    represents in the supply-chain domain (roughly ≤ 140 characters).
-- The list contains **all 8** universes currently in `ValidUniverses`:
-  Customer Order, Shipper Booking, Carrier Booking, Cargo Stuffing,
-  Shipping Instruction, Events And Milestones, Destination,
-  Customer Messaging Service. The order returned matches the order of
+    represents (roughly ≤ 140 characters).
+- The list contains **1** universe currently in `ValidUniverses`:
+  Stocks. The order returned matches the order of
   `ValidUniverses` (declaration order).
 - Universe metadata (names + descriptions) is defined as a **static readonly
   collection inside `MetadataTools`**, alongside the existing `ValidUniverses`
@@ -72,7 +68,7 @@ affected. There are no SQL, Druid, or field-retrieval (Taxonomy / Vector) change
 ## Out of scope
 
 - No new configuration surface, JSON resource files, or database reads.
-- No changes to `get_field_tags`, `get_fields`, `query_shipment_data`,
+- No changes to `get_field_tags`, `get_fields`, `query_stock_data`,
   `execute_report`, or `download_report`.
 - No changes to `IFieldRetriever`, its Taxonomy or Vector implementations, or
   to the SQL validation / transformation pipeline.
@@ -91,18 +87,16 @@ affected. There are no SQL, Druid, or field-retrieval (Taxonomy / Vector) change
 - [ ] `MetadataTools` exposes a `ListUniverses` method annotated with
   `[McpServerTool(Name = "list_universes")]` and a `[Description]` that
   explicitly instructs the LLM to call it **first**, before `get_field_tags`.
-- [ ] Calling `list_universes` with no arguments returns exactly 8 entries.
+- [ ] Calling `list_universes` with no arguments returns exactly 1 entry.
 - [ ] The returned `name` values, compared as an unordered set, equal
   `ValidUniverses` in `MetadataTools`. A test that adds a universe to
   `ValidUniverses` without adding a description (or vice versa) fails.
 - [ ] The returned list is in the same order as `ValidUniverses` (declaration
-  order), starting with `"Customer Order"` and ending with
-  `"Customer Messaging Service"`.
+  order), which is just `"Stocks"`.
 - [ ] Every entry has a non-empty `description` string of at most 140 characters
   and no line breaks.
 - [ ] Each `description` mentions the domain concept the universe represents
-  (e.g. the entry for `"Customer Order"` references customer orders; the entry
-  for `"Events And Milestones"` references events or milestones). A test
+(e.g. the entry for `"Stocks"` references stock holdings). A test
   asserts a keyword per universe so descriptions cannot silently drift into
   placeholders.
 - [ ] The tool logs one `Information`-level entry on invocation and one on

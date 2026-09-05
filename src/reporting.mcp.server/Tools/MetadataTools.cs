@@ -12,14 +12,7 @@ public sealed class MetadataTools
 {
     private static readonly IReadOnlyList<UniverseInfo> Universes =
     [
-        new("Customer Order",             "Customer orders and their lifecycle, including order status, line items, and shipment assignments."),
-        new("Shipper Booking",            "Bookings made by shippers to reserve capacity, covering booking status and cargo details."),
-        new("Carrier Booking",            "Carrier-side bookings confirming vessel space, including carrier references and booking status."),
-        new("Cargo Stuffing",             "Cargo stuffing operations linking cargo to containers, including stuffing status and dates."),
-        new("Shipping Instruction",       "Shipping instructions submitted by shippers, containing cargo and routing instruction details."),
-        new("Events And Milestones",      "Shipment events and milestones tracking the physical movement of goods across the supply chain."),
-        new("Destination",               "Destination-leg data covering final delivery information and port-of-discharge details."),
-        new("Customer Messaging Service", "Messages exchanged with customers via the customer messaging service, including message status."),
+        new("Stocks", "Personal stock holdings including ticker, shares owned, purchase price, current price, gain/loss, and sector."),
     ];
 
     private static readonly IReadOnlyList<string> ValidUniverses =
@@ -27,11 +20,8 @@ public sealed class MetadataTools
 
     private static readonly IReadOnlyList<string> ValidTags =
     [
-        "identifier", "status", "date", "milestone", "leg", "location", "partner", "quantity",
-        "weight", "volume", "cost", "currency", "demurrage", "detention", "container", "document",
-        "reference", "flag", "vessel", "mode", "cargo", "service", "customs"
+        "identifier", "status", "date", "quantity", "cost", "currency", "reference", "flag"
     ];
-
 
     private readonly IFieldRetriever _fields;
     private readonly ILogger<MetadataTools> _logger;
@@ -61,13 +51,11 @@ public sealed class MetadataTools
         "Get available tags and field counts for a universe.\n\n" +
         "Call this FIRST to discover what types of fields are available in a universe, " +
         "then use get_fields() with specific tags to retrieve matching fields.\n\n" +
-        "Common tags: identifier, status, date, milestone, leg, location, partner, quantity, " +
-        "weight, volume, cost, currency, demurrage, detention, container, document, reference, " +
-        "flag, vessel, mode, cargo, service, customs.\n\n" +
+        "Common tags: identifier, status, date, quantity, cost, currency, reference, flag.\n\n" +
         "Returns: dict mapping each tag to the number of enabled fields with that tag, " +
-        "e.g. {\"status\": 8, \"date\": 15, \"cost\": 6}.")]
+        "e.g. {\"status\": 3, \"date\": 15, \"cost\": 6}.")]
     public async Task<IReadOnlyDictionary<string, int>> GetFieldTags(
-        [Description("The universe to explore. One of: Customer Order, Shipper Booking, Carrier Booking, Cargo Stuffing, Shipping Instruction, Events And Milestones, Destination, Customer Messaging Service.")]
+        [Description("The universe to explore. Currently only 'Stocks' is supported.")]
         string universe,
         CancellationToken ct = default)
     {
@@ -88,7 +76,7 @@ public sealed class MetadataTools
         "Each result includes: column_id, column_name, universe, data_type, description, tags, " +
         "linked_ids, role ('matched' or 'dependency'), and optionally allowed_values.")]
     public async Task<IReadOnlyList<FieldResult>> GetFields(
-        [Description("One or more universe names. Fields from all listed universes are included (OR logic).")]
+        [Description("One or more universe names. Currently only 'Stocks' is supported.")]
         string[] universes,
         [Description("One or more tags. Returns fields matching ANY tag (OR logic). Use get_field_tags() first to discover available tags.")]
         string[] tags,
@@ -145,4 +133,3 @@ public sealed class MetadataTools
         return results;
     }
 }
-

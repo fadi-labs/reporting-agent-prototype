@@ -16,19 +16,19 @@ public class MetadataToolsTests
     public async Task GetFieldTags_DelegatesToRetriever_WithGivenUniverse()
     {
         var expected = new Dictionary<string, int> { ["status"] = 3, ["date"] = 7 };
-        _retriever.GetTagsForUniverseAsync("Customer Order", Arg.Any<CancellationToken>())
+        _retriever.GetTagsForUniverseAsync("Stocks", Arg.Any<CancellationToken>())
             .Returns(expected);
 
-        var result = await Build().GetFieldTags("Customer Order");
+        var result = await Build().GetFieldTags("Stocks");
 
         Assert.Equal(expected, result);
-        await _retriever.Received(1).GetTagsForUniverseAsync("Customer Order", Arg.Any<CancellationToken>());
+        await _retriever.Received(1).GetTagsForUniverseAsync("Stocks", Arg.Any<CancellationToken>());
     }
 
     [Fact]
     public async Task GetFields_DelegatesToRetriever_WithCorrectUniversesAndTags()
     {
-        var universes = new[] { "Customer Order" };
+        var universes = new[] { "Stocks" };
         var tags = new[] { "status", "date" };
         var expected = Array.Empty<FieldResult>();
         _retriever.RetrieveAsync(
@@ -53,7 +53,7 @@ public class MetadataToolsTests
                 Arg.Any<CancellationToken>())
             .Returns(Array.Empty<FieldResult>());
 
-        await Build().GetFields(["Customer Order"], ["status"]);
+        await Build().GetFields(["Stocks"], ["status"]);
 
         await _retriever.Received(1).RetrieveAsync(
             Arg.Any<IReadOnlyList<string>>(),
@@ -72,7 +72,7 @@ public class MetadataToolsTests
                 Arg.Any<CancellationToken>())
             .Returns(Array.Empty<FieldResult>());
 
-        await Build().GetFields(["Customer Order"], ["status"], top_k: 5);
+        await Build().GetFields(["Stocks"], ["status"], top_k: 5);
 
         await _retriever.Received(1).RetrieveAsync(
             Arg.Any<IReadOnlyList<string>>(),
@@ -94,7 +94,7 @@ public class MetadataToolsTests
     public async Task GetFields_EmptyTags_ThrowsArgumentException()
     {
         await Assert.ThrowsAsync<ArgumentException>(() =>
-            Build().GetFields(["Customer Order"], []));
+            Build().GetFields(["Stocks"], []));
     }
 
     // Criterion 3: unrecognised universe names the value and lists valid universes
@@ -104,7 +104,7 @@ public class MetadataToolsTests
         var ex = await Assert.ThrowsAsync<ArgumentException>(() =>
             Build().GetFields(["Foo"], ["status"]));
         Assert.Contains("Foo", ex.Message);
-        Assert.Contains("Customer Order", ex.Message);
+        Assert.Contains("Stocks", ex.Message);
     }
 
     // Criterion 4: unrecognised tag names the value and lists valid tags
@@ -112,7 +112,7 @@ public class MetadataToolsTests
     public async Task GetFields_UnrecognisedTag_ThrowsWithTagNameAndValidList()
     {
         var ex = await Assert.ThrowsAsync<ArgumentException>(() =>
-            Build().GetFields(["Customer Order"], ["banana"]));
+            Build().GetFields(["Stocks"], ["banana"]));
         Assert.Contains("banana", ex.Message);
         Assert.Contains("identifier", ex.Message);
     }
@@ -122,7 +122,7 @@ public class MetadataToolsTests
     public async Task GetFields_TopKZero_ThrowsArgumentException()
     {
         await Assert.ThrowsAsync<ArgumentException>(() =>
-            Build().GetFields(["Customer Order"], ["status"], top_k: 0));
+            Build().GetFields(["Stocks"], ["status"], top_k: 0));
     }
 
     // Criterion 6: top_k = 101
@@ -130,7 +130,7 @@ public class MetadataToolsTests
     public async Task GetFields_TopK101_ThrowsArgumentException()
     {
         await Assert.ThrowsAsync<ArgumentException>(() =>
-            Build().GetFields(["Customer Order"], ["status"], top_k: 101));
+            Build().GetFields(["Stocks"], ["status"], top_k: 101));
     }
 
     // Criterion 7: both invalid universe and tag — single exception reports both violations
@@ -154,7 +154,7 @@ public class MetadataToolsTests
                 Arg.Any<CancellationToken>())
             .Returns(Array.Empty<FieldResult>());
 
-        await Build().GetFields(["customer order"], ["status"]);
+        await Build().GetFields(["stocks"], ["status"]);
 
         await _retriever.Received(1).RetrieveAsync(
             Arg.Any<IReadOnlyList<string>>(),
@@ -163,12 +163,12 @@ public class MetadataToolsTests
             Arg.Any<CancellationToken>());
     }
 
-    // list_universes — AC: exactly 8 entries
+    // list_universes — AC: exactly 1 entry
     [Fact]
-    public async Task ListUniverses_ReturnsExactly8Entries()
+    public async Task ListUniverses_ReturnsExactly1Entry()
     {
         var result = await Build().ListUniverses();
-        Assert.Equal(8, result.Count);
+        Assert.Single(result);
     }
 
     // list_universes — AC: name set equals ValidUniverses (drift check)
@@ -177,8 +177,7 @@ public class MetadataToolsTests
     {
         var expected = new HashSet<string>
         {
-            "Customer Order", "Shipper Booking", "Carrier Booking", "Cargo Stuffing",
-            "Shipping Instruction", "Events And Milestones", "Destination", "Customer Messaging Service"
+            "Stocks"
         };
 
         var result = await Build().ListUniverses();
@@ -186,13 +185,13 @@ public class MetadataToolsTests
         Assert.Equal(expected, result.Select(u => u.Name).ToHashSet());
     }
 
-    // list_universes — AC: Customer Order first, Customer Messaging Service last
+    // list_universes — AC: Stocks first and last (only universe)
     [Fact]
-    public async Task ListUniverses_OrderIsCustomerOrderFirstAndCustomerMessagingServiceLast()
+    public async Task ListUniverses_OrderIsStocksFirstAndStocksLast()
     {
         var result = await Build().ListUniverses();
-        Assert.Equal("Customer Order", result[0].Name);
-        Assert.Equal("Customer Messaging Service", result[^1].Name);
+        Assert.Equal("Stocks", result[0].Name);
+        Assert.Equal("Stocks", result[^1].Name);
     }
 
     // list_universes — AC: descriptions non-empty, ≤140 chars, no line breaks
@@ -213,14 +212,7 @@ public class MetadataToolsTests
 
     // list_universes — AC: each description contains a domain keyword
     [Theory]
-    [InlineData("Customer Order", "order")]
-    [InlineData("Shipper Booking", "booking")]
-    [InlineData("Carrier Booking", "booking")]
-    [InlineData("Cargo Stuffing", "cargo")]
-    [InlineData("Shipping Instruction", "instruction")]
-    [InlineData("Events And Milestones", "milestone")]
-    [InlineData("Destination", "destination")]
-    [InlineData("Customer Messaging Service", "message")]
+    [InlineData("Stocks", "stock")]
     public async Task ListUniverses_DescriptionContainsDomainKeyword(string universeName, string keyword)
     {
         var result = await Build().ListUniverses();

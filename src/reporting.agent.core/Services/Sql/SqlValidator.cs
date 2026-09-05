@@ -127,7 +127,7 @@ public sealed class SqlValidator
             errors.Add(new ValidationError(
                 "BLOCKED_COLUMN",
                 $"Column(s) [{string.Join(", ", blockedFound.OrderBy(c => c, StringComparer.Ordinal))}] are internal and cannot be used directly.",
-                "Use shipperBookingNumber or another identifier for counting unique shipments."));
+                "Use stockTicker or another identifier for counting unique positions."));
         }
 
         // 9. Column whitelist (alias-aware)

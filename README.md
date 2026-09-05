@@ -1,6 +1,6 @@
 # reporting-agent-prototype
 
-An AI reporting agent for supply-chain data.
+An AI reporting agent for personal stock portfolio analytics.
 
 It listens to a user prompt, calls MCP tools, discovers the right fields, and turns the request into SQL against Druid to pull back the answer. It runs through LiteLLM, so you can plug in Azure AI Foundry, OpenAI, or Anthropic by swapping env vars. In practice, it can:
 
@@ -14,11 +14,11 @@ Think of it as a prompt-to-SQL analyst with tool access.
 ## Example prompts
 
 ```
-Show me a count of customer orders grouped by their status. Which status has the most orders?
+Show me a count of stocks grouped by their position status. Which status has the most holdings?
 ```
 
 ```
-List 10 customer orders that are currently in ACCEPTED status. Show order ID and creation date.
+List 10 stocks with the highest gain percentage. Show ticker, current price, and gain percentage.
 ```
 
 The agent will discover the right fields, build the SQL, run it against Druid, and explain the results.

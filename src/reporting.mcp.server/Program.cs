@@ -1,6 +1,5 @@
 using Qdrant.Client;
 using reporting.agent.core.Configuration;
-using reporting.agent.core.Services.Database;
 using reporting.agent.core.Services.Druid;
 using reporting.agent.core.Services.SecureGateway;
 using reporting.agent.core.Services.Sql;
@@ -14,7 +13,6 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddEnvironmentVariables();
 
 builder.Services
-    .Configure<PostgresOptions>(builder.Configuration.GetSection(PostgresOptions.SectionName))
     .Configure<DruidOptions>(builder.Configuration.GetSection(DruidOptions.SectionName))
     .Configure<QdrantOptions>(builder.Configuration.GetSection(QdrantOptions.SectionName))
     .Configure<AzureOpenAIOptions>(builder.Configuration.GetSection(AzureOpenAIOptions.SectionName))
@@ -26,7 +24,6 @@ builder.Services.AddSingleton<TaxonomyRetriever>();
 builder.Services.AddSingleton<ColumnService>();
 builder.Services.AddSingleton<SqlValidator>();
 builder.Services.AddSingleton<SqlTransformer>();
-builder.Services.AddSingleton<ReportingDbService>();
 
 builder.Services.AddHttpClient<DruidClient>();
 builder.Services.AddHttpClient<SecureGatewayClient>();

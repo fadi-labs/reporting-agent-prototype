@@ -21,16 +21,14 @@ services:
       - qdrant_data:/qdrant/storage
     restart: unless-stopped
 
-  # --- Shared PostgreSQL --------------------------------------------------
-  # Hosts: druid metadata, plus the `reporting` and `staging` DBs used by
-  # the .NET entity tools. Init script creates all three.
+  # --- PostgreSQL (Druid metadata only) ----------------------------------
   postgres:
     image: postgres:16-alpine
     container_name: postgres
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: postgres
+      POSTGRES_DB: druid
     ports:
       - "5432:5432"
     volumes:
@@ -117,8 +115,7 @@ services:
     volumes:
       - druid_router_var:/opt/druid/var
 
-  # --- MCP server (optional) ----------------------------------------------
-  # Bring up with: docker compose --profile app up
+  # --- MCP server ---------------------------------------------------------
   mcp:
     profiles: ["app"]
     build:
@@ -131,12 +128,6 @@ services:
       - druid-broker
     environment:
       ASPNETCORE_URLS: http://0.0.0.0:8001
-      Postgres__Host: postgres
-      Postgres__Port: "5432"
-      Postgres__User: postgres
-      Postgres__Password: postgres
-      Postgres__ReportDatabase: reporting
-      Postgres__StageDatabase: staging
       Druid__Host: http://druid-broker:8082
       Qdrant__Url: http://qdrant:6334
       FieldRetrieval__Mode: Taxonomy

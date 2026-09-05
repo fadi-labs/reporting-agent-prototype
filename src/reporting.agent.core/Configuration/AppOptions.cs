@@ -1,17 +1,5 @@
 namespace reporting.agent.core.Configuration;
 
-public sealed class PostgresOptions
-{
-    public const string SectionName = "Postgres";
-
-    public string Host { get; set; } = "localhost";
-    public int Port { get; set; } = 5432;
-    public string User { get; set; } = "postgres";
-    public string Password { get; set; } = "";
-    public string ReportDatabase { get; set; } = "reporting";
-    public string StageDatabase { get; set; } = "staging";
-}
-
 public sealed class DruidOptions
 {
     public const string SectionName = "Druid";

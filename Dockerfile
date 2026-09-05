@@ -4,9 +4,6 @@ WORKDIR /src
 COPY global.json Directory.Build.props reporting-agent-prototype.sln ./
 COPY src/reporting.agent.core/reporting.agent.core.csproj src/reporting.agent.core/
 COPY src/reporting.mcp.server/reporting.mcp.server.csproj src/reporting.mcp.server/
-COPY tests/reporting.agent.tests/reporting.agent.tests.csproj tests/reporting.agent.tests/
-RUN dotnet restore src/reporting.mcp.server/reporting.mcp.server.csproj
-
 COPY src/ src/
 
 RUN dotnet publish src/reporting.mcp.server/reporting.mcp.server.csproj \
